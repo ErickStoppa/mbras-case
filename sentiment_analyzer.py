@@ -81,18 +81,19 @@ def _validate_content(content: Any) -> None:
         )
 
 
+def _raise_invalid_hashtags() -> None:
+    raise InvalidInputError(
+        error="hashtags deve ser um array de strings iniciando com #",
+        code="INVALID_HASHTAGS",
+    )
+
+
 def _validate_hashtags(hashtags: Any) -> None:
     if not isinstance(hashtags, list):
-        raise InvalidInputError(
-            error="hashtags deve ser um array de strings iniciando com #",
-            code="INVALID_HASHTAGS",
-        )
+        _raise_invalid_hashtags()
     for tag in hashtags:
         if not isinstance(tag, str) or not tag.startswith("#"):
-            raise InvalidInputError(
-                error="hashtags deve ser um array de strings iniciando com #",
-                code="INVALID_HASHTAGS",
-            )
+            _raise_invalid_hashtags()
 
 
 def _is_unicode_compatible_user_id(user_id: str) -> bool:
@@ -104,20 +105,19 @@ def _is_unicode_compatible_user_id(user_id: str) -> bool:
     return all(char == "_" or char.isalnum() for char in suffix)
 
 
-def _validate_user_id(user_id: Any) -> None:
-    if not isinstance(user_id, str):
-        raise InvalidInputError(
-            error="user_id inválido para o formato suportado",
-            code="INVALID_USER_ID",
-        )
-    if USER_ID_BASE_PATTERN.match(user_id):
-        return
-    if _is_unicode_compatible_user_id(user_id):
-        return
+def _raise_invalid_user_id() -> None:
     raise InvalidInputError(
         error="user_id inválido para o formato suportado",
         code="INVALID_USER_ID",
     )
+
+
+def _validate_user_id(user_id: Any) -> None:
+    if isinstance(user_id, str) and (
+        USER_ID_BASE_PATTERN.match(user_id) or _is_unicode_compatible_user_id(user_id)
+    ):
+        return
+    _raise_invalid_user_id()
 
 
 def _validate_messages(messages: list[dict[str, Any]]) -> None:
