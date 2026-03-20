@@ -73,7 +73,10 @@ def _parse_timestamp_cached(timestamp: str) -> datetime:
 
 def _validate_content(content: Any) -> None:
     if not isinstance(content, str):
-        content = str(content)
+        raise InvalidInputError(
+            error="content deve ser string Unicode com no máximo 280 caracteres",
+            code="INVALID_CONTENT",
+        )
     if len(content) > 280:
         raise InvalidInputError(
             error="content deve ter no máximo 280 caracteres Unicode",
@@ -92,7 +95,7 @@ def _validate_hashtags(hashtags: Any) -> None:
     if not isinstance(hashtags, list):
         _raise_invalid_hashtags()
     for tag in hashtags:
-        if not isinstance(tag, str) or not tag.startswith("#"):
+        if not isinstance(tag, str) or not tag.startswith("#") or len(tag) <= 1:
             _raise_invalid_hashtags()
 
 
