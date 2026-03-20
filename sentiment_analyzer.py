@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 import hashlib
 import math
 from typing import Any
@@ -58,7 +59,14 @@ def _validate_timestamp(timestamp: Any) -> None:
 
 
 def _parse_timestamp(timestamp: Any) -> datetime:
-    if not isinstance(timestamp, str) or not TIMESTAMP_STRICT_Z_PATTERN.match(timestamp):
+    if not isinstance(timestamp, str):
+        raise ValueError("invalid timestamp format")
+    return _parse_timestamp_cached(timestamp)
+
+
+@lru_cache(maxsize=4096)
+def _parse_timestamp_cached(timestamp: str) -> datetime:
+    if not TIMESTAMP_STRICT_Z_PATTERN.match(timestamp):
         raise ValueError("invalid timestamp format")
     return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
 
@@ -121,17 +129,19 @@ def _validate_messages(messages: list[dict[str, Any]]) -> None:
             _validate_hashtags(message.get("hashtags"))
 
 
+@lru_cache(maxsize=32768)
 def _normalize_for_matching(token: str) -> str:
     normalized = unicodedata.normalize("NFKD", token.casefold())
     return "".join(ch for ch in normalized if not unicodedata.combining(ch))
 
 
-def _tokenize(content: str) -> list[str]:
-    return TOKEN_PATTERN.findall(content)
+@lru_cache(maxsize=8192)
+def _tokenize(content: str) -> tuple[str, ...]:
+    return tuple(TOKEN_PATTERN.findall(content))
 
 
 def tokenize_content(content: str) -> list[str]:
-    return _tokenize(content)
+    return list(_tokenize(content))
 
 
 def lexicon_tokens(content: str) -> list[str]:
@@ -168,9 +178,15 @@ def _extract_flags(messages: list[dict[str, Any]]) -> dict[str, bool]:
 
 
 def analyze_message_sentiment(*, content: str, user_id: str) -> dict[str, float | str]:
+    label, average_score = _analyze_message_sentiment_cached(content, user_id)
+    return {"label": label, "score": average_score}
+
+
+@lru_cache(maxsize=16384)
+def _analyze_message_sentiment_cached(content: str, user_id: str) -> tuple[str, float]:
     tokens = _tokenize(content)
     if not tokens:
-        return {"label": "neutral", "score": 0.0}
+        return ("neutral", 0.0)
 
     normalized_tokens = [_normalize_for_matching(token) for token in tokens]
     non_hashtag_count = max(sum(1 for token in tokens if not token.startswith("#")), 1)
@@ -192,7 +208,6 @@ def analyze_message_sentiment(*, content: str, user_id: str) -> dict[str, float 
         if idx > 0 and normalized_tokens[idx - 1] in INTENSIFIERS:
             token_score *= 1.5
 
-                                                                         
         scope_start = max(0, idx - 3)
         negation_count = sum(1 for tok in normalized_tokens[scope_start:idx] if tok in NEGATIONS)
         if negation_count % 2 == 1:
@@ -210,7 +225,7 @@ def analyze_message_sentiment(*, content: str, user_id: str) -> dict[str, float 
         label = "negative"
     else:
         label = "neutral"
-    return {"label": label, "score": average_score}
+    return (label, average_score)
 
 
 def _build_minimal_distribution(messages: list[dict[str, Any]]) -> dict[str, float]:
