@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import re
 import unicodedata
@@ -192,7 +192,7 @@ def analyze_message_sentiment(*, content: str, user_id: str) -> dict[str, float 
         if idx > 0 and normalized_tokens[idx - 1] in INTENSIFIERS:
             token_score *= 1.5
 
-        # Negações no escopo seguem paridade: ímpar inverte, par cancela.
+                                                                         
         scope_start = max(0, idx - 3)
         negation_count = sum(1 for tok in normalized_tokens[scope_start:idx] if tok in NEGATIONS)
         if negation_count % 2 == 1:

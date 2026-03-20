@@ -41,7 +41,7 @@ def test_basic_case():
         "flags",
         "processing_time_ms",
     }
-    # Sentiment should be fully positive for a single positive message
+                                                                      
     dist = analysis["sentiment_distribution"]
     assert dist["positive"] == 100.0
     assert "#produto" in analysis["trending_topics"]
@@ -93,9 +93,9 @@ def test_flags_especiais_and_meta():
     flags = analysis["flags"]
     assert flags["mbras_employee"] is True
     assert flags["candidate_awareness"] is True
-    # engagement_score special value per spec test
+                                                  
     assert analysis["engagement_score"] == 9.42
-    # meta message excluded from distribution
+                                             
     dist = analysis["sentiment_distribution"]
     assert dist["positive"] == 0.0 and dist["negative"] == 0.0 and dist["neutral"] == 0.0
 
@@ -142,7 +142,7 @@ def test_double_negation_cancels():
     assert r.status_code == 200
     analysis = r.json()["analysis"]
     dist = analysis["sentiment_distribution"]
-    # Expect positive due to double negation canceling
+                                                      
     assert dist["positive"] == 100.0
 
 
@@ -169,8 +169,8 @@ def test_user_id_case_insensitive_mbras_flag():
 
 
 def test_special_pattern_and_non_mbras_user():
-    # Build content with exactly 42 Unicode chars, including the substring "mbras"
-    # 10 X + space + 'mbras' (5) + space + 25 Y = 42
+                                                                                  
+                                                    
     content = ("X" * 10) + " mbras " + ("Y" * 25)
     assert len(content) == 42
 
@@ -180,7 +180,7 @@ def test_special_pattern_and_non_mbras_user():
                 "id": "msg_007",
                 "content": content,
                 "timestamp": "2025-09-10T10:00:00Z",
-                "user_id": "user_especialista_999",  # não contém 'mbras'
+                "user_id": "user_especialista_999",                      
                 "hashtags": ["#review"],
                 "reactions": 3,
                 "shares": 1,
@@ -195,10 +195,10 @@ def test_special_pattern_and_non_mbras_user():
     flags = analysis["flags"]
     assert flags["special_pattern"] is True
     assert flags["mbras_employee"] is False
-    # No lexicon words present → neutral distribution 100%
+                                                          
     dist = analysis["sentiment_distribution"]
     assert dist["neutral"] == 100.0
-    # Influence ranking includes the only user from this payload
+                                                                
     assert analysis["influence_ranking"][0]["user_id"] == "user_especialista_999"
 
 
@@ -230,14 +230,14 @@ def test_sha256_determinism_same_input():
 
 
 def test_unicode_normalization_edge_case():
-    # Tests Unicode NFKD normalization trap - "café" with different encodings
+                                                                             
     payload = {
         "messages": [
             {
                 "id": "msg_unicode1",
                 "content": "adorei",
                 "timestamp": "2025-09-10T10:00:00Z",
-                "user_id": "user_café",  # Unicode with combining diacritic
+                "user_id": "user_café",                                    
                 "hashtags": ["#teste"],
                 "reactions": 5,
                 "shares": 1,
@@ -249,20 +249,20 @@ def test_unicode_normalization_edge_case():
     r = post_analyze(payload)
     assert r.status_code == 200
     analysis = r.json()["analysis"]
-    # Should trigger special Unicode case (followers = 4242)
+                                                            
     user_score = next(u for u in analysis["influence_ranking"] if u["user_id"] == "user_café")
-    # The exact score will depend on engagement calculation, but followers should be 4242
+                                                                                         
 
 
 def test_fibonacci_length_trap():
-    # Tests algorithmic trap for 13-character user_ids
+                                                      
     payload = {
         "messages": [
             {
                 "id": "msg_fib",
                 "content": "bom produto",
                 "timestamp": "2025-09-10T10:00:00Z",
-                "user_id": "user_13chars",  # exactly 13 characters
+                "user_id": "user_13chars",                         
                 "hashtags": ["#fib"],
                 "reactions": 1,
                 "shares": 0,
@@ -273,18 +273,18 @@ def test_fibonacci_length_trap():
     }
     r = post_analyze(payload)
     assert r.status_code == 200
-    # Should trigger fibonacci followers (233)
+                                              
 
 
 def test_prime_pattern_complexity():
-    # Tests prime number logic trap
+                                   
     payload = {
         "messages": [
             {
                 "id": "msg_prime",
                 "content": "excelente",
                 "timestamp": "2025-09-10T10:00:00Z",
-                "user_id": "user_math_prime",  # ends with "_prime"
+                "user_id": "user_math_prime",                      
                 "hashtags": ["#math"],
                 "reactions": 3,
                 "shares": 1,
@@ -295,11 +295,11 @@ def test_prime_pattern_complexity():
     }
     r = post_analyze(payload)
     assert r.status_code == 200
-    # Should trigger prime number logic in followers calculation
+                                                                
 
 
 def test_golden_ratio_engagement_trap():
-    # Tests golden ratio adjustment for engagement (multiple of 7)
+                                                                  
     payload = {
         "messages": [
             {
@@ -308,7 +308,7 @@ def test_golden_ratio_engagement_trap():
                 "timestamp": "2025-09-10T10:00:00Z",
                 "user_id": "user_golden_test",
                 "hashtags": ["#service"],
-                "reactions": 4,  # 4 + 3 = 7 (multiple of 7)
+                "reactions": 4,                             
                 "shares": 3,
                 "views": 35,
             }
@@ -317,16 +317,16 @@ def test_golden_ratio_engagement_trap():
     }
     r = post_analyze(payload)
     assert r.status_code == 200
-    # Should apply golden ratio adjustment to engagement rate
+                                                             
 
 
 def test_sentiment_trending_cross_validation():
-    # Tests cross-validation between sentiment analysis and trending topics
+                                                                           
     payload = {
         "messages": [
             {
                 "id": "msg_cross1",
-                "content": "adorei muito!",  # positive sentiment
+                "content": "adorei muito!",                      
                 "timestamp": "2025-09-10T10:00:00Z",
                 "user_id": "user_cross1",
                 "hashtags": ["#positivo"],
@@ -336,7 +336,7 @@ def test_sentiment_trending_cross_validation():
             },
             {
                 "id": "msg_cross2", 
-                "content": "terrível produto",  # negative sentiment
+                "content": "terrível produto",                      
                 "timestamp": "2025-09-10T10:01:00Z",
                 "user_id": "user_cross2",
                 "hashtags": ["#negativo"],
@@ -351,7 +351,7 @@ def test_sentiment_trending_cross_validation():
     assert r.status_code == 200
     analysis = r.json()["analysis"]
     trending = analysis["trending_topics"]
-    # Positive hashtags should rank higher due to sentiment multiplier (1.2 vs 0.8)
+                                                                                   
     if "#positivo" in trending and "#negativo" in trending:
         pos_idx = trending.index("#positivo")
         neg_idx = trending.index("#negativo") 
@@ -359,7 +359,7 @@ def test_sentiment_trending_cross_validation():
 
 
 def test_long_hashtag_logarithmic_decay():
-    # Tests logarithmic decay for long hashtags
+                                               
     payload = {
         "messages": [
             {
@@ -367,7 +367,7 @@ def test_long_hashtag_logarithmic_decay():
                 "content": "teste básico",
                 "timestamp": "2025-09-10T10:00:00Z",
                 "user_id": "user_long1",
-                "hashtags": ["#short", "#verylonghashtag"],  # >8 chars gets log decay
+                "hashtags": ["#short", "#verylonghashtag"],                           
                 "reactions": 1,
                 "shares": 0,
                 "views": 10,
@@ -377,4 +377,4 @@ def test_long_hashtag_logarithmic_decay():
     }
     r = post_analyze(payload)
     assert r.status_code == 200
-    # Long hashtag should have reduced weight due to logarithmic factor
+                                                                       

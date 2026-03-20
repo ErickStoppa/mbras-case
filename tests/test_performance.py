@@ -44,6 +44,6 @@ def test_performance_under_200ms():
     r = client.post("/analyze-feed", json=payload)
     dt = (time.perf_counter() - t0) * 1000
     assert r.status_code == 200
-    # Target < 200ms for 1000 messages
+                                      
     assert dt < 200.0, f"Took {dt:.2f} ms"
 
