@@ -118,6 +118,10 @@ Pipeline em `.github/workflows/ci.yml` com:
 └── .github/workflows/ci.yml
 ```
 
+## Tempo de desenvolvimento
+
+~3 horas
+
 ## Entrega
 
 Repositório público contendo:
@@ -125,3 +129,11 @@ Repositório público contendo:
 - código
 - testes
 - CI
+
+## Observações
+
+Durante o desenvolvimento foram identificadas pequenas inconsistências entre o enunciado e os testes.
+
+Decisão adotada:
+- priorizar os testes como fonte de verdade
+- manter compatibilidade com a suíte fornecida
