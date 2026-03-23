@@ -66,6 +66,57 @@ Exemplo de payload:
 }
 ```
 
+Exemplo prático via `curl`:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/analyze-feed" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "time_window_minutes": 60,
+    "messages": [
+      {
+        "user_id": "user_mbras_123",
+        "content": "Super adorei o produto #produto",
+        "timestamp": "2025-09-01T12:00:00Z",
+        "hashtags": ["#produto"],
+        "reactions": 7,
+        "shares": 0,
+        "views": 100
+      }
+    ]
+  }'
+```
+
+Resposta (resumo):
+
+```json
+{
+  "analysis": {
+    "flags": {
+      "mbras_employee": true,
+      "candidate_awareness": false,
+      "special_pattern": false
+    },
+    "engagement_score": 0.11326237921249266,
+    "sentiment_distribution": {
+      "positive": 100.0,
+      "negative": 0.0,
+      "neutral": 0.0
+    },
+    "trending_topics": ["#produto"],
+    "influence_ranking": [
+      {
+        "user_id": "user_mbras_123",
+        "followers": 7890,
+        "influence_score": 3158.0679574275273
+      }
+    ],
+    "anomaly_detected": false,
+    "processing_time_ms": 0
+  }
+}
+```
+
 ### Determinismo
 
 - SHA-256 para cálculo de followers

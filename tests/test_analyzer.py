@@ -1,6 +1,4 @@
-import json
 from fastapi.testclient import TestClient
-from datetime import datetime, timezone
 
 from main import app
 
@@ -250,7 +248,7 @@ def test_unicode_normalization_edge_case():
     assert r.status_code == 200
     analysis = r.json()["analysis"]
                                                             
-    user_score = next(u for u in analysis["influence_ranking"] if u["user_id"] == "user_café")
+    assert any(u["user_id"] == "user_café" for u in analysis["influence_ranking"])
                                                                                          
 
 
