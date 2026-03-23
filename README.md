@@ -171,7 +171,7 @@ Pipeline em `.github/workflows/ci.yml` com:
 
 ## Tempo de desenvolvimento
 
-~3 horas
+~7 horas
 
 ## Entrega
 
